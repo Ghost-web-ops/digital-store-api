@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 
 const authMiddleware = (req, res, next) => {
+   console.log("--- New Request ---");
+  console.log("Authorization Header Received:", req.headers['authorization']);
+  console.log("JWT_SECRET on Server:", process.env.JWT_SECRET ? `Exists (starts with: ${process.env.JWT_SECRET.substring(0, 4)}...)` : "!!! SECRET NOT FOUND !!!");
+  // ------------------------------------
   // 1. احصل على التوكن من الهيدر
   const authHeader = req.header('Authorization');
 
