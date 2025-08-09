@@ -15,46 +15,49 @@ passport.use(
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
-      const googleId = profile.id;
-      const email = profile.emails[0].value;
-      const username = profile.displayName;
+  const googleId = profile.id;
+  const email = profile.emails[0].value;
+  const username = profile.displayName;
 
-      try {
-        // 1. Check if user exists with this Google ID
+  try {
+    // 1. Check if user exists with this Google ID
+    let user = await prisma.user.findUnique({
+      where: { googleId: googleId },
+    });
 
-        let userResult = await prisma.user.findUnique({ where: { googleId } });
-
-        if (userResult.rows.length > 0) {
-          // User exists, log them in
-          return done(null, userResult.rows[0]);
-        }
-
-        // 2. If not, check if user exists with this email
-
-        userResult = await prisma.user.findUnique({ where: { email } });
-
-        if (userResult.rows.length > 0) {
-          // User exists by email, so LINK their Google ID
-          const updatedUser = await prisma.user.update({
-            where: { email },
-            data: { googleId, username },
-          });
-          return done(null, updatedUser.rows[0]);
-        }
-
-        // 3. If no user exists at all, create a new one
-        const newUser = await prisma.user.create({
-          data: {
-            googleId,
-            email,
-            username,
-          },
-        });
-        return done(null, newUser.rows[0]);
-      } catch (error) {
-        return done(error, false);
-      }
+    if (user) {
+      // User exists, log them in
+      return done(null, user);
     }
+    
+    // 2. If not, check if user exists with this email
+    user = await prisma.user.findUnique({
+      where: { email: email },
+    });
+    
+    if (user) {
+      // User exists by email, so LINK their Google ID
+      const updatedUser = await prisma.user.update({
+        where: { email: email },
+        data: { googleId: googleId },
+      });
+      return done(null, updatedUser);
+    }
+    
+    // 3. If no user exists at all, create a new one
+    const newUser = await prisma.user.create({
+      data: {
+        username: username,
+        email: email,
+        googleId: googleId,
+      },
+    });
+    return done(null, newUser);
+
+  } catch (error) {
+    return done(error, false);
+  }
+}
   )
 );
 

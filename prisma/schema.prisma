@@ -16,7 +16,8 @@ model User {
   id          Int      @id @default(autoincrement())
   username    String
   email       String   @unique
-  password_hash String
+   password_hash String?  // <-- أصبح اختياريًا
+  googleId      String?  @unique @map("google_id")
   orders      Order[]
   createdAt   DateTime @default(now()) @map("created_at")
 }
