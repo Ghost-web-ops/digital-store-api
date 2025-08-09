@@ -19,6 +19,10 @@ app.use('/api', productRoutes);
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api', ordersRoutes); // Using orders routes
 
+app.get('/', (req, res) => {
+  res.send('Welcome to the Digital Store API');
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
