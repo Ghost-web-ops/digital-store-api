@@ -46,5 +46,35 @@ router.get('/products', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+router.delete('/products/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.product.delete({
+      where: { id: parseInt(id) },
+    });
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error("Delete Product Error:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// --- UPDATE a product (Protected) - الكود الجديد ---
+router.patch('/products/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const validatedData = productSchema.partial().parse(req.body);
+        const updatedProduct = await prisma.product.update({
+            where: { id: parseInt(id) },
+            data: validatedData,
+        });
+        res.json(updatedProduct);
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({ errors: error.errors });
+        }
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 export default router;
